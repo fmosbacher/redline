@@ -27,7 +27,8 @@ fn main() {
     let mut canvas = Canvas::new(dims);
 
     canvas.clear(Color::Hex(0xd1d5dbff));
-    canvas.fill_rect(Rect::new((300, 100), 320, 100), Color::Hex(0xdc2626ff));
+    canvas.fill_rect(Rect::new((300, 100), 320, 100), Color::Hex(0xf87171ff));
+    canvas.fill_circle(Circle::new((200, 200), 150), Color::Hex(0xb91c1cff));
 
     let pixels: Vec<_> = canvas
         .pixels_hex()
@@ -36,5 +37,5 @@ fn main() {
             Color::Hex(p) => *p,
         })
         .collect();
-    write_to_ppm("examples/square.ppm", &pixels, dims);
+    write_to_ppm("examples/example.ppm", &pixels, dims);
 }

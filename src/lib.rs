@@ -24,6 +24,17 @@ impl Rect {
     }
 }
 
+pub struct Circle {
+    center: (usize, usize),
+    radius: usize,
+}
+
+impl Circle {
+    pub fn new(center: (usize, usize), radius: usize) -> Self {
+        Self { center, radius }
+    }
+}
+
 impl Canvas {
     pub fn new((width, height): (usize, usize)) -> Self {
         Self {
@@ -47,6 +58,23 @@ impl Canvas {
         for i in y..(y + rect.height) {
             for j in x..(x + rect.width) {
                 self.pixels.get_mut(i * self.width + j).map(|p| *p = hex);
+            }
+        }
+    }
+
+    pub fn fill_circle(&mut self, circle: Circle, color: Color) {
+        let hex = match color {
+            Color::Hex(hex) => hex,
+        };
+        let (cx, cy) = circle.center;
+        let (x, y) = (cx - circle.radius, cy - circle.radius);
+        for i in y..(y + circle.radius * 2) {
+            for j in x..(x + circle.radius * 2) {
+                let dx = if cx > j { cx - j } else { j - cx };
+                let dy = if cy > i { cy - i } else { i - cy };
+                if dx.saturating_pow(2) + dy.saturating_pow(2) <= circle.radius.saturating_pow(2) {
+                    self.pixels.get_mut(i * self.width + j).map(|p| *p = hex);
+                }
             }
         }
     }
