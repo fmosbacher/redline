@@ -28,4 +28,4 @@ canvas.fill_triangle(
 // Use canvas.pixels_raw() to get the pixels as a Vec<u32>
 ```
 
-![Rendered shapes](/assets/mixes_shapes.png)
+![Rendered shapes](./assets/mixes_shapes.png)
