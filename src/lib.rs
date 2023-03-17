@@ -46,6 +46,31 @@ impl Line {
     }
 }
 
+pub struct Triangle {
+    p1: (usize, usize),
+    p2: (usize, usize),
+    p3: (usize, usize),
+}
+
+impl Triangle {
+    pub fn new(p1: (usize, usize), p2: (usize, usize), p3: (usize, usize)) -> Self {
+        Self { p1, p2, p3 }
+    }
+
+    pub fn area(&self) -> f64 {
+        let v1 = (
+            self.p2.0 as f64 - self.p1.0 as f64,
+            self.p2.1 as f64 - self.p1.1 as f64,
+        );
+        let v2 = (
+            self.p3.0 as f64 - self.p1.0 as f64,
+            self.p3.1 as f64 - self.p1.1 as f64,
+        );
+        // Cross product of vectors with z always equals to zero
+        ((v1.0 * v2.1 - v1.1 * v2.0) / 2.0).abs()
+    }
+}
+
 impl Canvas {
     pub fn new((width, height): (usize, usize)) -> Self {
         Self {
@@ -126,6 +151,30 @@ impl Canvas {
                     ((y as f64 - b) / a) as usize
                 };
                 self.pixels.get_mut(y * self.width + x).map(|p| *p = color);
+            }
+        }
+    }
+
+    pub fn fill_triangle(&mut self, triangle: Triangle, color: Color) {
+        let color = match color {
+            Color::Hex(hex) => hex,
+        };
+        let (x_min, x_max) = (
+            triangle.p1.0.min(triangle.p2.0).min(triangle.p3.0),
+            triangle.p1.0.max(triangle.p2.0).max(triangle.p3.0),
+        );
+        let (y_min, y_max) = (
+            triangle.p1.1.min(triangle.p2.1).min(triangle.p3.1),
+            triangle.p1.1.max(triangle.p2.1).max(triangle.p3.1),
+        );
+        for y in y_min..y_max.min(self.height) {
+            for x in x_min..x_max.min(self.width) {
+                let t1 = Triangle::new(triangle.p1, triangle.p2, (x, y));
+                let t2 = Triangle::new(triangle.p2, triangle.p3, (x, y));
+                let t3 = Triangle::new(triangle.p1, triangle.p3, (x, y));
+                if t1.area() + t2.area() + t3.area() <= triangle.area() {
+                    self.pixels[y * self.width + x] = color;
+                }
             }
         }
     }
