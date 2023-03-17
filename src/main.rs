@@ -27,15 +27,13 @@ fn main() {
     let mut canvas = Canvas::new(dims);
 
     canvas.clear(Color::Hex(0xd1d5dbff));
-    canvas.fill_rect(Rect::new((300, 100), 320, 100), Color::Hex(0xf87171ff));
-    canvas.fill_circle(Circle::new((200, 200), 150), Color::Hex(0xb91c1cff));
+    canvas.fill_rect(Rect::new((300, 100), 320, 100), Color::Hex(0xf97316ff));
+    canvas.fill_circle(Circle::new((200, 200), 150), Color::Hex(0xfacc15ff));
+    canvas.line(Line::new((0, 0), dims), Color::Hex(0xef4444ff));
+    canvas.line(Line::new((640, 0), (0, 320)), Color::Hex(0xef4444ff));
+    canvas.line(Line::new((320, 0), (280, 320)), Color::Hex(0xef4444ff));
+    canvas.line(Line::new((640, 140), (0, 140)), Color::Hex(0xef4444ff));
+    canvas.line(Line::new((380, 0), (380, 320)), Color::Hex(0xef4444ff));
 
-    let pixels: Vec<_> = canvas
-        .pixels_hex()
-        .iter()
-        .map(|c| match c {
-            Color::Hex(p) => *p,
-        })
-        .collect();
-    write_to_ppm("examples/example.ppm", &pixels, dims);
+    write_to_ppm("examples/mixed_shapes.ppm", &canvas.pixels_raw(), dims);
 }
