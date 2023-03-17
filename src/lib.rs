@@ -80,10 +80,36 @@ impl Canvas {
         }
     }
 
+    fn blend_color(background_color: u32, foreground_color: u32) -> u32 {
+        // TODO: Refactor as an implementation of Color..?
+        let (r1, g1, b1) = (
+            (background_color >> 8 * 3) as f64,
+            (background_color >> 8 * 2 & 0xff) as f64,
+            (background_color >> 8 & 0xff) as f64,
+        );
+        let (r2, g2, b2, a2) = (
+            (foreground_color >> 8 * 3) as f64,
+            (foreground_color >> 8 * 2 & 0xff) as f64,
+            (foreground_color >> 8 & 0xff) as f64,
+            foreground_color & 0xff,
+        );
+        let a = a2 as f64 / 0xff as f64;
+        (((r2 * a + r1 * (1.0 - a)) as u32) << 8 * 3)
+            + (((g2 * a + g1 * (1.0 - a)) as u32) << 8 * 2)
+            + (((b2 * a + b1 * (1.0 - a)) as u32) << 8)
+            + 0xff
+    }
+
     pub fn clear(&mut self, color: Color) {
-        self.pixels = match color {
-            Color::Hex(hex) => self.pixels.iter().map(|_| hex).collect(),
+        let color = match color {
+            Color::Hex(hex) => hex,
         };
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let current_color = &mut self.pixels[y * self.width + x];
+                *current_color = Self::blend_color(*current_color, color);
+            }
+        }
     }
 
     pub fn fill_rect(&mut self, rect: Rect, color: Color) {
@@ -93,7 +119,8 @@ impl Canvas {
         let (x, y) = rect.top_left;
         for i in y..(y + rect.height).min(self.height) {
             for j in x..(x + rect.width).min(self.width) {
-                self.pixels[i * self.width + j] = color;
+                let current_color = &mut self.pixels[i * self.width + j];
+                *current_color = Self::blend_color(*current_color, color);
             }
         }
     }
@@ -112,7 +139,8 @@ impl Canvas {
                 let dx = if cx > j { cx - j } else { j - cx };
                 let dy = if cy > i { cy - i } else { i - cy };
                 if dx.saturating_pow(2) + dy.saturating_pow(2) <= circle.radius.saturating_pow(2) {
-                    self.pixels[i * self.width + j] = color;
+                    let current_color = &mut self.pixels[i * self.width + j];
+                    *current_color = Self::blend_color(*current_color, color);
                 }
             }
         }
@@ -136,7 +164,9 @@ impl Canvas {
         if dx > dy.abs() as usize {
             for x in x1..x2.min(self.width) {
                 let y = (a * x as f64 + b) as usize;
-                self.pixels.get_mut(y * self.width + x).map(|p| *p = color);
+                self.pixels
+                    .get_mut(y * self.width + x)
+                    .map(|p| *p = Self::blend_color(*p, color));
             }
         } else {
             let range = if y1 > y2 {
@@ -150,7 +180,9 @@ impl Canvas {
                 } else {
                     ((y as f64 - b) / a) as usize
                 };
-                self.pixels.get_mut(y * self.width + x).map(|p| *p = color);
+                self.pixels
+                    .get_mut(y * self.width + x)
+                    .map(|p| *p = Self::blend_color(*p, color));
             }
         }
     }
@@ -173,7 +205,8 @@ impl Canvas {
                 let t2 = Triangle::new(triangle.p2, triangle.p3, (x, y));
                 let t3 = Triangle::new(triangle.p1, triangle.p3, (x, y));
                 if t1.area() + t2.area() + t3.area() <= triangle.area() {
-                    self.pixels[y * self.width + x] = color;
+                    let current_color = &mut self.pixels[y * self.width + x];
+                    *current_color = Self::blend_color(*current_color, color);
                 }
             }
         }
